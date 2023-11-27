@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 import f_info
 from f_info import*
-from DCP_T import idx_zero
+from DCP_C import idx_zero
 def creat_params(Na, dim_a, max_iter,upb,lwb):
     # creat matrix Q and r
     A = np.zeros((dim_a,Na))
