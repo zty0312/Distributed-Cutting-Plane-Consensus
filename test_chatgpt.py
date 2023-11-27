@@ -1,12 +1,46 @@
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
-# Assuming M2 is a NumPy array
-Na = 5  # Replace with your actual dimension
-M2 = np.zeros((Na,Na))  # Example: random matrix for demonstration
-print(M2)
-# Create a binary matrix where 0 corresponds to M2 != 0 and 1 corresponds to M2 == 0
-binary_matrix = (M2 == 0).astype(int)
+Na = 5
 
-# Print the binary matrix
-print("Binary Matrix:")
-print(binary_matrix)
+# generate double stochastic matrix
+num_degree = np.random.randint(2, Na) 
+x = np.random.random((num_degree,num_degree))
+rsum = None
+csum = None
+
+while (np.any(rsum != 1)) | (np.any(csum != 1)):
+    x /= x.sum(0)
+    x = x / x.sum(1)[:, np.newaxis]
+    rsum = x.sum(1)
+    csum = x.sum(0)
+print('weight matrix', x)
+
+# generate a directed random graph
+weighted_adjacency_matrix = x
+G = nx.from_numpy_matrix(weighted_adjacency_matrix)
+pos = nx.spring_layout(G)  # Layout algorithm (you can choose other layouts)
+labels = nx.get_edge_attributes(G, 'weight')
+nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=8)
+nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+plt.show()
+
+# assign weights
+nodelist = list(range(1, num_nodes + 1))
+edgelist = []
+for i in nodelist:
+    out_neighbour = list(G.successors(i))
+    print('current agents out-neighbour', out_neighbour)
+    for j in out_neighbour:
+        if j == []:
+            break
+        if i == j:
+            edgelist.append((i, j, 0))
+        else:
+            rand = random.randint(5, 25)
+            edgelist.append((i, j, rand))
+            edgelist.append((j, i, rand))
+print(edgelist)
+
+# visualisation
