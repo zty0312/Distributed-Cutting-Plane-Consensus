@@ -72,7 +72,7 @@ def Random_Weighted_Matrix(n, positions): # positions: the position where the we
             print("fully connected graph")
             return weighted_adjacency_matrix
         
-    for i in range(Na-count+1, Na):
+    for i in range(n-count+1, n):
         p_r = GRPdur(n) # row index
         p_c = p_r[::-1] # colum index
         weighted_adjacency_matrix[p_r, p_c] += c[0, i]
