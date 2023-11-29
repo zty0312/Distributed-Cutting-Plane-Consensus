@@ -40,30 +40,39 @@ def Random_Weighted_Matrix(n, positions): # positions: the position where the we
     weighted_adjacency_matrix = np.zeros((n,n))
     weighted_adjacency_matrix[range(n), range(n)] = c[0, 0] # assign diagnal
     count = 1
-    if bool(positions): # The list is not empty
-        if len(positions) >= n:
-            pos_to_assign = positions[:n] # Choose the first n tuples 
-            p_r, p_c = zip(*pos_to_assign) # Separate x and y coordinates into two arrays
-            weighted_adjacency_matrix[p_r, p_c] += c[0, count]
-            count += 1
-            positions = positions[n:] # delete the first n tuples in 'positions' list
+    while bool(positions): # The list is not empty
+        acceptable_postions = find_longest_combination_in_different_rows_and_columns(positions) # find positions in different row and col
+        if count < n:
+            if len(acceptable_postions) >= n:
+               pos_to_assign = acceptable_postions[:n] # Choose the first n tuples 
+               p_r, p_c = zip(*pos_to_assign) # Separate x and y coordinates into two arrays
+               p_r = np.array(p_r)
+               p_c = np.array(p_c)
+               weighted_adjacency_matrix[p_r, p_c] += c[0, count]
+               count += 1
+               set_a = set(positions) # delete used tuples in 'positions' list
+               set_b = set(acceptable_postions)
+               result = set_a.symmetric_difference(set_b)
+               positions = list(result)
+                
+            else:
+               pos_to_assign = positions[:len(acceptable_postions)] # Choose all tuples
+               p_r, p_c = zip(*pos_to_assign) # Separate x and y coordinates into two arrays
+               p_r = np.array(p_r)
+               p_c = np.array(p_c)               
+               missing_elements_in_row = [element for element in range(n) if element not in p_r] # Find missing elements
+               p_r = np.append(p_r, missing_elements_in_row, axis=0) # Append missing elements to the existing list
+               missing_elements_in_col = [element for element in range(n) if element not in p_c] # Find missing elements
+               p_c = np.append(p_c, missing_elements_in_col, axis=0) # Append missing elements to the existing list
+               weighted_adjacency_matrix[p_r, p_c] += c[0, count]
+               count += 1
+               positions = []
         else:
-            pos_to_assign = positions[:len(positions)] # Choose all tuples
-            p_r, p_c = zip(*pos_to_assign) # Separate x and y coordinates into two arrays
-            missing_elements_in_row = [element for element in range(n) if element not in p_r] # Find missing elements
-            p_r.extend(missing_elements_in_row) # Append missing elements to the existing list
-            missing_elements_in_col = [element for element in range(n) if element not in p_c] # Find missing elements
-            p_c.extend(missing_elements_in_col) # Append missing elements to the existing list
-            weighted_adjacency_matrix[p_r, p_c] += c[0, count]
-            count += 1
-            positions = []
-    else: # positions is empty
+            weighted_adjacency_matrix = Set_fully_connected(n)
+            print("fully connected graph")
+            return weighted_adjacency_matrix
         
-    
-
-
-
-    for i in range(1, n):
+    for i in range(Na-count+1, Na):
         p_r = GRPdur(n) # row index
         p_c = p_r[::-1] # colum index
         weighted_adjacency_matrix[p_r, p_c] += c[0, i]
@@ -72,30 +81,17 @@ def Random_Weighted_Matrix(n, positions): # positions: the position where the we
 
 
 # generate a directed random graph
-weighted_adjacency_matrix = Random_Weighted_Matrix(Na)
+non_zero_positions = [(0,3), (0,4), (1,2), (2,1),(3,0),(3,2), (4,0), (4,3)]
+weighted_adjacency_matrix = Random_Weighted_Matrix(Na, non_zero_positions)
 print('weighted matrix:\n', weighted_adjacency_matrix)
-G = nx.from_numpy_matrix(weighted_adjacency_matrix)
+print('col sum:', np.sum(weighted_adjacency_matrix, axis=1))
+print('row sum:', np.sum(weighted_adjacency_matrix, axis=0))
+G = nx.from_numpy_array(weighted_adjacency_matrix)
+
+
+# visualisation
 pos = nx.spring_layout(G)  # Layout algorithm (you can choose other layouts)
 labels = nx.get_edge_attributes(G, 'weight')
 nx.draw(G, pos, with_labels=True, node_size=700, node_color='skyblue', font_size=8)
 nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 plt.show()
-
-# assign weights
-nodelist = list(range(1, num_nodes + 1))
-edgelist = []
-for i in nodelist:
-    out_neighbour = list(G.successors(i))
-    print('current agents out-neighbour', out_neighbour)
-    for j in out_neighbour:
-        if j == []:
-            break
-        if i == j:
-            edgelist.append((i, j, 0))
-        else:
-            rand = random.randint(5, 25)
-            edgelist.append((i, j, rand))
-            edgelist.append((j, i, rand))
-print(edgelist)
-
-# visualisation
